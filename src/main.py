@@ -3,7 +3,7 @@ from fastapi.requests import Request
 from backend.db_config import get_session, init_db
 from contextlib import asynccontextmanager
 from backend.services import PaymentService
-from backend.schema import UserModel
+from backend.schema import UserModel, UpdateModel
 from sqlalchemy.ext.asyncio import AsyncSession
 import httpx
 from config import settings
@@ -98,3 +98,28 @@ async def get_user(telegram_id: str, session: AsyncSession = Depends(get_session
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return user
+
+
+@app.post("/update_info")
+async def update_info(
+    update_model: UpdateModel, session: AsyncSession = Depends(get_session)
+):
+    user = await service.get_user_by_telegram_id(
+        telegram_id=update_model.telegram_id, session=session
+    )
+    if user is None:
+        raise HTTPException(status_code=404, detail="User Not Found")
+    await service.update_user_info(user=user, info=update_model.info, session=session)
+    return {"Updated": True}
+
+
+# @app.post("/update_password")
+# async def update_password(telegram_id:str,password:str,session:AsyncSession = Depends(get_session)):
+#     user = await service.get_user_by_telegram_id(
+#         telegram_id=telegram_id, session=session
+#     )
+#     if user is None:
+#         raise HTTPException(status_code=404, detail="User Not Found")
+#     info = {'password':password}
+#     await service.update_user_info(user=user, info=info, session=session)
+#     return {"Updated": True}

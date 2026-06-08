@@ -34,3 +34,5 @@ back_to_plans_button = create_button(
 renew_button = create_button(text="💳 Renew Plan", callback_data="back")
 
 view_plans_button = create_button(text="💰 View Plans", callback_data="back")
+
+update_password_button = create_button(text="Change Password", callback_data="change")

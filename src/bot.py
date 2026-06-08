@@ -25,8 +25,10 @@ from buttons import (
     renew_button,
     view_plans_button,
     payment_buttons,
+    update_password_button,
 )
 from scheduler import scheduler
+from utils import update_user_info
 
 tag_scraper = BotScraper()
 
@@ -38,6 +40,10 @@ router = Router()
 class LoginState(StatesGroup):
     phone_number = State()
     password = State()
+
+
+class UpdatePasswordState(StatesGroup):
+    new_password = State()
 
 
 async def get_payment_buttons():
@@ -84,7 +90,7 @@ async def get_payment_link(message: Message):
 
 
 async def do_tasks(message: Message):
-    telegram_id = await message.chat.id
+    telegram_id = message.chat.id
     data = await get_userinfo(telegram_id=telegram_id)
     if data is not None:
         phone_number = data["phone_number"]
@@ -100,7 +106,11 @@ async def do_tasks(message: Message):
         )
         await save_plan(telegram_id=telegram_id, plan=plan)
     await tag_scraper.main(
-        phone_number=phone_number, password=password, message=message, bot=bot
+        phone_number=phone_number,
+        password=password,
+        message=message,
+        bot=bot,
+        plan=plan,
     )
     if plan == Plan.premium:
         scheduler.add_job(
@@ -183,6 +193,31 @@ async def go_to_plans(callback: CallbackQuery):
     )
 
 
+@router.callback_query(F.data == "change")
+async def update_password(callback: CallbackQuery, state: FSMContext):
+    await callback.answer()
+    await callback.message.answer("Enter Correct Password")
+    await state.set_state(UpdatePasswordState.new_password)
+
+
+@router.message(UpdatePasswordState.new_password)
+async def handle_new_password(message: Message):
+    new_phone_number = message.text
+    telegram_id = message.chat.id
+    info = {"phone_number": new_phone_number}
+    updated = await update_user_info(
+        message=message, telegram_id=telegram_id, info=info
+    )
+    if updated:
+        await message.answer(
+            "Password Updated Successfully", reply_markup=do_tasks_button
+        )
+    else:
+        await message.answer(
+            "An Error Ocuured Try Again", reply_markup=update_password_button
+        )
+
+
 @router.callback_query(F.data == "login")
 async def handle_login(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
@@ -214,6 +249,25 @@ async def handle_password(message: Message, state: FSMContext):
             "phone_number": edited_phone_number,
             "password": password,
         }
+        info = {
+            "phone_number": edited_phone_number,
+            "password": password,
+        }
+        user = await get_user(message=message)
+        if user is not None:
+            updated = await update_user_info(
+                message=message, telegram_id=telegram_id, info=info
+            )
+            if updated:
+                await message.answer(
+                    "User Information Updated Successfully",
+                    reply_markup=do_tasks_button,
+                )
+            else:
+                await message.answer(
+                    "Error occured while updating", reply_markup=login_button
+                )
+            return
         timeout = httpx.Timeout(connect=6.0, read=12.0, write=6.0, pool=5.0)
         async with httpx.AsyncClient(verify=False, timeout=timeout) as client:
             response = await client.post(
