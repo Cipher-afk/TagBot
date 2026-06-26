@@ -103,7 +103,7 @@ class BotScraper:
         # await page.wait_for_timeout(7000)
         await message.answer("Doing Tasks.... 🤖")
         await page.wait_for_selector(".jindu", timeout=10000, state="visible")
-        await page.wait_for_timeout(5000)
+        await page.wait_for_timeout(7000)
         task_el = await page.query_selector(".jindu")
         task_text = await task_el.text_content()
         print(task_text)
