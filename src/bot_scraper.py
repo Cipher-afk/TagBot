@@ -185,7 +185,9 @@ class BotScraper:
         async with async_playwright() as playwright:
             await message.answer("Loading....🔃")
             browser = await playwright.chromium.launch(headless=False)
+            print("Browser Launched")
             context = await browser.new_context()
+            print("Context Created")
             page = await context.new_page()
             await message.answer("Tag Website Launching.... 🚀")
             await page.goto(
