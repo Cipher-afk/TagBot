@@ -159,14 +159,14 @@ class BotScraper:
                 else:
                     print("New Order Found", flush=True)
                     pass
-                if await page.get_by_text(
-                    "You have a pending order, would you like to view it now?",
-                    exact=True,
-                ).is_visible():
-                    await message.answer("Pending order found, viewing now...")
-                    await page.locator(".dialog-button", has_text="OK").click()
-                    await page.wait_for_timeout(3000)
-            await page.wait_for_selector(".copy", timeout=10000)
+            if await page.get_by_text(
+                "You have a pending order, would you like to view it now?",
+                exact=True,
+            ).is_visible():
+                await message.answer("Pending order found, viewing now...")
+                await page.locator(".dialog-button", has_text="OK").click()
+                await page.wait_for_timeout(3000)
+            await page.wait_for_selector(".statistics", timeout=10000)
             await message.answer("Rating Page loaded ✅")
             await page.get_by_text("Fill in the rating", exact=True).click(
                 timeout=10000
