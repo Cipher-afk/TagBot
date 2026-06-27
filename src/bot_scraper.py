@@ -168,11 +168,14 @@ class BotScraper:
                     await page.wait_for_timeout(3000)
             # await page.wait_for_selector(".copy", timeout=10000)
             await message.answer("Rating Page loaded ✅")
-            await page.get_by_text("Fill in the rating", exact=True).click()
-            print("clicked")
+            await page.get_by_text("Fill in the rating", exact=True).click(
+                timeout=10000
+            )
+            print("clicked", flush=True)
             await page.wait_for_selector(".info", state="visible", timeout=10000)
             await message.answer("Filling in the rating.... 🔃")
             await page.get_by_text("Submit Rating", exact=True).click()
+            await message.answer("Submitted rating")
             await page.wait_for_timeout(3000)
             tasks_done += 1
         await message.answer(f"({tasks_done}/{task_value}) Completed")
