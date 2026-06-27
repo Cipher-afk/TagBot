@@ -110,13 +110,16 @@ class BotScraper:
         await page.wait_for_timeout(7000)
         task_el = await page.query_selector(".jindu")
         task_text = await task_el.text_content()
+
         print(task_text)
         print(task_text.split(" "))
         if plan == Plan.free:
             task_value = 3
         else:
             task_to_be_done = int(
-                task_text.split(" ")[1].lstrip("Progress ").split("/")[1][0]
+                task_text.split(" ")[1]
+                .lstrip("Progress ")
+                .split("/")[1][0:-1]  # It gets all the value till the last
             )  # splitting Task Progress(0/0）
             task_done = int(
                 task_text.split(" ")[1].lstrip("Progress ").split("/")[0][1]
@@ -135,7 +138,7 @@ class BotScraper:
             print("Clicked Get New Order", flush=True)
             try:
                 await page.wait_for_selector(".copy", timeout=10000, state="visible")
-                await message.answer("New Order Found ✅")
+                await message.answer("New Order Found ✅\nLoading Order...")
             except Exception as e:
                 print(f"Error occurred while waiting for new order: {e}", flush=True)
                 if await page.get_by_text(
@@ -173,7 +176,7 @@ class BotScraper:
             )
             print("clicked", flush=True)
             await page.wait_for_selector(".info", state="visible", timeout=10000)
-            await message.answer("Filling in the rating.... 🔃")
+            await message.answer("Filling in the rati   ng.... 🔃")
             await page.get_by_text("Submit Rating", exact=True).click()
             await message.answer("Submitted rating")
             await page.wait_for_timeout(3000)

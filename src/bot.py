@@ -273,6 +273,11 @@ async def handle_password(message: Message, state: FSMContext):
                 message=message, telegram_id=telegram_id, info=info
             )
             if updated:
+                await save_userinfo(
+                    telegram_id=telegram_id,
+                    phone_number=edited_phone_number,
+                    password=password,
+                )
                 await message.answer(
                     "User Information Updated Successfully",
                     reply_markup=do_tasks_button,
