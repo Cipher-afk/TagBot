@@ -27,6 +27,7 @@ async def update_user_info(message: Message, telegram_id: str, info: dict):
 async def queue_worker():
     while True:
         task_data = await scraper_queue.get()
+        print(task_data, flush=True)
         try:
             await tag_scraper.main(**task_data)
         except Exception as e:

@@ -28,10 +28,8 @@ from buttons import (
     update_password_button,
 )
 from scheduler import scheduler
-from utils import update_user_info, queue_worker
+from utils import update_user_info, queue_worker, scraper_queue
 import asyncio
-
-scrape_queue = asyncio.Queue()
 
 tag_scraper = BotScraper()
 
@@ -69,7 +67,9 @@ async def get_user(message: Message):
         )
         if response.is_error:
             print(response.json())
-            await message.answer("An error occured while getting user try again...")
+            await message.answer(
+                "You don't have an account with us yet if you are logging in ignore this message\n if not please create an account before doing a task thank you ☺".title()
+            )
             return
         user = response.json()
         return user
@@ -109,7 +109,7 @@ async def do_tasks(message: Message):
             telegram_id=telegram_id, phone_number=phone_number, password=password
         )
         await save_plan(telegram_id=telegram_id, plan=plan)
-    await scrape_queue.put(
+    await scraper_queue.put(
         {
             "phone_number": phone_number,
             "password": password,
