@@ -184,7 +184,16 @@ class BotScraper:
             return
         async with async_playwright() as playwright:
             await message.answer("Loading....🔃")
-            browser = await playwright.chromium.launch(headless=False)
+            browser = await playwright.chromium.launch(
+                headless=False,
+                args=[
+                    "--no-sandbox",
+                    "--disable-dev-smh-usage",
+                    "--disable-gpu",
+                    "--single-process",
+                    "--no-zygote",
+                ],
+            )
             print("Browser Launched")
             context = await browser.new_context()
             print("Context Created")
