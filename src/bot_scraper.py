@@ -133,33 +133,40 @@ class BotScraper:
             await message.answer("Getting New Order.... 🔃")
             await page.wait_for_timeout(3000)
             print("Clicked Get New Order", flush=True)
-            if await page.get_by_text(
-                re.compile("holiday", re.IGNORECASE)
-            ).is_visible():
-                await message.answer(
-                    "A Holiday is being observed so no tasks for today".title()
-                )
-                return
-            elif await page.get_by_text(
-                "You have reached the maximum number of orders for today and cannot accept more orders"
-            ).is_visible():
-                await message.answer("Your have completed all your tasks for today ✅")
-                return
-            elif await page.get_by_text(re.compile("audit", re.IGNORECASE)):
-                await message.answer(
-                    "The company is having an audit so there are no tasks for today"
-                )
-            else:
-                print("New Order Found", flush=True)
-                pass
-            if await page.get_by_text(
-                "You have a pending order, would you like to view it now?", exact=True
-            ).is_visible():
-                await message.answer("Pending order found, viewing now...")
-                await page.locator(".dialog-button", has_text="OK").click()
-                await page.wait_for_timeout(3000)
-            await message.answer("Filling in the rating.... 🔃")
-            await page.wait_for_selector(".copy", timeout=10000)
+            try:
+                await page.wait_for_selector(".copy", timeout=10000, state="visible")
+                await message.answer("New Order Found ✅")
+            except Exception as e:
+                print(f"Error occurred while waiting for new order: {e}", flush=True)
+                if await page.get_by_text(
+                    re.compile("holiday", re.IGNORECASE)
+                ).is_visible():
+                    await message.answer(
+                        "A Holiday is being observed so no tasks for today".title()
+                    )
+                    return
+                elif await page.get_by_text(
+                    "You have reached the maximum number of orders for today and cannot accept more orders"
+                ).is_visible():
+                    await message.answer(
+                        "Your have completed all your tasks for today ✅"
+                    )
+                    return
+                elif await page.get_by_text(re.compile("audit", re.IGNORECASE)):
+                    await message.answer(
+                        "The company is having an audit so there are no tasks for today"
+                    )
+                else:
+                    print("New Order Found", flush=True)
+                    pass
+                if await page.get_by_text(
+                    "You have a pending order, would you like to view it now?",
+                    exact=True,
+                ).is_visible():
+                    await message.answer("Pending order found, viewing now...")
+                    await page.locator(".dialog-button", has_text="OK").click()
+                    await page.wait_for_timeout(3000)
+            # await page.wait_for_selector(".copy", timeout=10000)
             await message.answer("Rating Page loaded ✅")
             await page.get_by_text("Fill in the rating", exact=True).click()
             print("clicked")
