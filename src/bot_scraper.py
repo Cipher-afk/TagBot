@@ -183,8 +183,9 @@ class BotScraper:
             tasks_done += 1
         await message.answer(f"({tasks_done}/{task_value}) Completed")
         await page.wait_for_timeout(6000)
+        print("Tasks done all completed")
         await page.screenshot(path="tasks_done.png")
-        file_path = Path(BASE_DIR, "task_done.png")
+        file_path = Path(BASE_DIR, "tasks_done.png")
         await bot.send_photo(
             chat_id=message.chat.id,
             photo=FSInputFile(path=file_path),
