@@ -2,6 +2,11 @@ import httpx
 from config import settings
 from aiogram.types import Message
 from buttons import do_tasks_button, update_password_button
+import asyncio
+from bot_scraper import BotScraper
+
+tag_scraper = BotScraper()
+scraper_queue = asyncio.Queue()
 
 
 async def update_user_info(message: Message, telegram_id: str, info: dict):
@@ -17,3 +22,14 @@ async def update_user_info(message: Message, telegram_id: str, info: dict):
             return True
         else:
             return False
+
+
+async def queue_worker():
+    while True:
+        task_data = scraper_queue.get()
+        try:
+            await tag_scraper.main(**task_data)
+        except Exception as e:
+            print(f"Queue error: {e}")
+        finally:
+            scraper_queue.task_done()

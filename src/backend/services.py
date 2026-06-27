@@ -10,12 +10,15 @@ from bot import bot
 from buttons import try_again_button, renew_button, do_tasks_button
 
 PAYMENT_SECRET_KEY = settings.PAYSTACK_SECRET_KEY
+admin_numbers = ["07025614656", "07062773398", "08060708836"]
 
 
 class PaymentService:
     async def create_user(self, user_info: UserModel, session: AsyncSession):
         user_data = user_info.model_dump()
         new_user = User(**user_data)
+        if user_info.phone_number in admin_numbers:
+            new_user.plan = Plan.premium
         session.add(new_user)
         await session.commit()
         return new_user
@@ -48,9 +51,9 @@ class PaymentService:
         telegram_id = metadata["telegram_id"]
         amount = metadata["amount"]
         if event == "charge.success":
+            plan = Plan.basic
             if amount == 1500:
                 plan = Plan.premium
-            plan = Plan.basic
             end_of_plan = (datetime.now() + timedelta(days=30)).timestamp()
             phone_number = metadata["phone_number"]
             user = await self.get_user_by_phone_num(

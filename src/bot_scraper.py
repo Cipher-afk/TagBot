@@ -5,6 +5,8 @@ from buttons import login_button
 import ddddocr, asyncio, os
 from pathlib import Path
 from backend.models import Plan
+import re
+from datetime import datetime
 
 ocr = ddddocr.DdddOcr()
 BASE_DIR = Path(__file__).parent.resolve()
@@ -74,7 +76,9 @@ class BotScraper:
                     reply_markup=login_button,
                 )
                 return
-            elif await page.get_by_text("Incorrect password.").is_visible(timeout=8000):
+            elif await page.get_by_text(
+                re.compile("incorrect password", re.IGNORECASE)
+            ).is_visible(timeout=8000):
                 await page.locator(".dialog-button", has_text="OK").click()
                 await page.get_by_placeholder("Account / Phone number").clear()
                 await page.locator("#login-pwd").clear()
@@ -111,9 +115,15 @@ class BotScraper:
         if plan == Plan.free:
             task_value = 3
         else:
-            task_value = int(
+            task_to_be_done = int(
                 task_text.split(" ")[1].lstrip("Progress ").split("/")[1][0]
-            )  # splitting Task Progress（0/0）
+            )  # splitting Task Progress(0/0）
+            task_done = int(
+                task_text.split(" ")[1].lstrip("Progress ").split("/")[0][1]
+            )
+            task_value = (
+                task_to_be_done - task_done
+            )  # I did this mainly because if a person has done 1/5 tasks and decides to use the bot i need the bot to only do 4 of those tasks
             print(task_value)
         # await page.wait_for_timeout(20000)
         tasks_done = 0
@@ -122,10 +132,23 @@ class BotScraper:
             await page.locator(".copybutton", has_text="Get New Order").click()
             await page.wait_for_timeout(3000)
             if await page.get_by_text(
+                re.compile("holiday", re.IGNORECASE)
+            ).is_visible():
+                await message.answer(
+                    "A Holiday is being observed so no tasks for today".title()
+                )
+                return
+            elif await page.get_by_text(
                 "You have reached the maximum number of orders for today and cannot accept more orders"
             ).is_visible():
                 await message.answer("Your have completed all your tasks for today ✅")
                 return
+            elif await page.get_by_text(re.compile("audit", re.IGNORECASE)):
+                await message.answer(
+                    "The company is having an audit so there are no tasks for today"
+                )
+            else:
+                pass
             if await page.get_by_text(
                 "You have a pending order, would you like to view it now?", exact=True
             ).is_visible():
@@ -153,6 +176,12 @@ class BotScraper:
     async def main(
         self, plan: str, phone_number: str, password: str, message: Message, bot: Bot
     ):
+        today = datetime.now().strftime("%d")
+        if today.lower() == "sunday":
+            await message.answer(
+                "There are no tasks to be done on a sunday enjoy your weekend 🥳".title()
+            )
+            return
         async with async_playwright() as playwright:
             await message.answer("Loading....🔃")
             browser = await playwright.chromium.launch(headless=False)

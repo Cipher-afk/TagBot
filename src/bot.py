@@ -28,7 +28,10 @@ from buttons import (
     update_password_button,
 )
 from scheduler import scheduler
-from utils import update_user_info
+from utils import update_user_info, queue_worker
+import asyncio
+
+scrape_queue = asyncio.Queue()
 
 tag_scraper = BotScraper()
 
@@ -58,6 +61,7 @@ async def get_payment_buttons():
 
 
 async def get_user(message: Message):
+    """This function gets the user from the backend and return the users info as a dictionary"""
     timeout = httpx.Timeout(connect=6.0, read=12.0, write=6.0, pool=5.0)
     async with httpx.AsyncClient(verify=False, timeout=timeout) as client:
         response = await client.get(
@@ -72,8 +76,8 @@ async def get_user(message: Message):
 
 
 async def get_payment_link(message: Message):
-    data = await get_userinfo(message.chat.id)
-    plan = await get_plan(message.chat.id)
+    data = await get_userinfo(telegram_id=message.chat.id)
+    plan = await get_plan(telegram_id=message.chat.id)
     if data is not None:
         phone_number, password = data["phone_number"], data["password"]
     else:
@@ -105,13 +109,23 @@ async def do_tasks(message: Message):
             telegram_id=telegram_id, phone_number=phone_number, password=password
         )
         await save_plan(telegram_id=telegram_id, plan=plan)
-    await tag_scraper.main(
-        phone_number=phone_number,
-        password=password,
-        message=message,
-        bot=bot,
-        plan=plan,
+    await scrape_queue.put(
+        {
+            "phone_number": phone_number,
+            "password": password,
+            "message": message,
+            "bot": bot,
+            "plan": plan,
+        }
     )
+    await message.answer("Your Tasks are loading..... ⏳")
+    # await tag_scraper.main(
+    #     phone_number=phone_number,
+    #     password=password,
+    #     message=message,
+    #     bot=bot,
+    #     plan=plan,
+    # )
     if plan == Plan.premium:
         scheduler.add_job(
             do_tasks, trigger="cron", day_of_week="mon-sat", hour=2, args=[message]
@@ -202,9 +216,9 @@ async def update_password(callback: CallbackQuery, state: FSMContext):
 
 @router.message(UpdatePasswordState.new_password)
 async def handle_new_password(message: Message):
-    new_phone_number = message.text
+    new_password = message.text
     telegram_id = message.chat.id
-    info = {"phone_number": new_phone_number}
+    info = {"password": new_password}
     updated = await update_user_info(
         message=message, telegram_id=telegram_id, info=info
     )
@@ -303,9 +317,10 @@ async def view_plans(message: Message):
     )
 
 
-async def main(): 
-        dp.include_router(router=router)
-        await dp.start_polling(bot)
+async def main():
+    dp.include_router(router=router)
+    await asyncio.create_task(queue_worker())
+    await dp.start_polling(bot)
 
 
 if __name__ == "__main__":
