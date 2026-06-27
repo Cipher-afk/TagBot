@@ -124,12 +124,13 @@ class BotScraper:
             task_value = (
                 task_to_be_done - task_done
             )  # I did this mainly because if a person has done 1/5 tasks and decides to use the bot i need the bot to only do 4 of those tasks
-            print(task_value)
+            print(task_value, flush=True)
         # await page.wait_for_timeout(20000)
         tasks_done = 0
         for i in range(int(task_value)):
             await message.answer(f"({tasks_done}/{task_value}) Completed")
             await page.locator(".copybutton", has_text="Get New Order").click()
+            await message.answer("Getting New Order.... 🔃")
             await page.wait_for_timeout(3000)
             if await page.get_by_text(
                 re.compile("holiday", re.IGNORECASE)
@@ -155,10 +156,13 @@ class BotScraper:
                 await message.answer("Pending order found, viewing now...")
                 await page.locator(".dialog-button", has_text="OK").click()
                 await page.wait_for_timeout(3000)
+            await message.answer("Filling in the rating.... 🔃")
             await page.wait_for_selector(".copy", timeout=10000)
+            await message.answer("Rating Page loaded ✅")
             await page.get_by_text("Fill in the rating", exact=True).click()
             print("clicked")
             await page.wait_for_selector(".info", state="visible", timeout=10000)
+            await message.answer("Filling in the rating.... 🔃")
             await page.get_by_text("Submit Rating", exact=True).click()
             await page.wait_for_timeout(3000)
             tasks_done += 1
