@@ -132,6 +132,7 @@ class BotScraper:
             await page.locator(".copybutton", has_text="Get New Order").click()
             await message.answer("Getting New Order.... 🔃")
             await page.wait_for_timeout(3000)
+            print("Clicked Get New Order", flush=True)
             if await page.get_by_text(
                 re.compile("holiday", re.IGNORECASE)
             ).is_visible():
@@ -149,6 +150,7 @@ class BotScraper:
                     "The company is having an audit so there are no tasks for today"
                 )
             else:
+                print("New Order Found", flush=True)
                 pass
             if await page.get_by_text(
                 "You have a pending order, would you like to view it now?", exact=True
