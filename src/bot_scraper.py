@@ -185,7 +185,7 @@ class BotScraper:
         async with async_playwright() as playwright:
             await message.answer("Loading....🔃")
             browser = await playwright.chromium.launch(
-                headless=False,
+                headless=True,
                 args=[
                     "--no-sandbox",
                     "--disable-dev-smh-usage",
