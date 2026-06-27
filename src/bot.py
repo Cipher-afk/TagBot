@@ -319,7 +319,7 @@ async def view_plans(message: Message):
 
 async def main():
     dp.include_router(router=router)
-    # await asyncio.create_task(queue_worker())
+    asyncio.create_task(queue_worker())
     await dp.start_polling(bot)
 
 
