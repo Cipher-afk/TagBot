@@ -10,3 +10,4 @@ pydantic_settings==2.14.2
 redis==8.0.1
 SQLAlchemy==2.0.51
 sqlmodel==0.0.38
+uvicorn
