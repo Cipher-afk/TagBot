@@ -322,6 +322,19 @@ async def view_plans(message: Message):
     )
 
 
+@router.message(Command("view_paid_plan"))
+async def get_paid_plan(message: Message):
+    await message.answer("Getting plans....")
+    user = await get_user(message=message)
+    if user is not None:
+        if user.plan == Plan.free:
+            await message.answer(
+                "You don't have any paid plans yet you can proceed with payment by clicking on one of these buttons",
+                reply_markup=payment_buttons,
+            )
+        await message.answer(f"Your current plan is {user.plan}")
+
+
 async def main():
     dp.include_router(router=router)
     asyncio.create_task(queue_worker())
