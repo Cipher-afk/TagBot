@@ -325,6 +325,7 @@ async def view_plans(message: Message):
 @router.message(Command("view_paid_plan"))
 async def get_paid_plan(message: Message):
     await message.answer("Getting plans....")
+    payment_buttons = await get_payment_buttons()
     user = await get_user(message=message)
     if user is not None:
         if user["plan"] == Plan.free:
