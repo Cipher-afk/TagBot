@@ -75,7 +75,7 @@ class BotScraper:
                     "Account or password is incorrect please Login again",
                     reply_markup=login_button,
                 )
-                return
+                return False
             elif await page.get_by_text(
                 re.compile("incorrect password", re.IGNORECASE)
             ).is_visible(timeout=8000):
@@ -87,12 +87,13 @@ class BotScraper:
                     "Password is incorrect please Login again",
                     reply_markup=login_button,
                 )
-                return
+                return False
             else:
                 break
         await page.wait_for_url(
             "https://m.tag368.net/#/home/", wait_until="domcontentloaded"
         )
+        return True
         # break
 
     async def do_tasks(self, plan: str, page: Page, message: Message, bot: Bot):
@@ -223,9 +224,11 @@ class BotScraper:
                 "https://m.tag368.net/#/", wait_until="domcontentloaded", timeout=200000
             )
             await message.answer("Login Page loaded 🔑🔐")
-            await self.login(
+            logged_in = await self.login(
                 page=page, phone_number=phone_number, password=password, message=message
             )
+            if logged_in == False:
+                return
             await message.answer("Login Completed ✅")
             task_page = await context.new_page()
             await self.do_tasks(plan=plan, page=task_page, message=message, bot=bot)
