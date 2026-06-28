@@ -10,7 +10,7 @@ from bot import bot
 from buttons import try_again_button, renew_button, do_tasks_button
 
 PAYMENT_SECRET_KEY = settings.PAYSTACK_SECRET_KEY
-admin_numbers = ["07025614656", "07062773398", "08060708836"]
+admin_numbers = ["7025614656", "7062773398"]
 
 
 class PaymentService:
@@ -96,4 +96,5 @@ class PaymentService:
             await bot.send_message(
                 telegram_id, "Your Monthly plan has expired", reply_markup=renew_button
             )
-            return
+            return {"expired": True}
+        return {"expired": False}

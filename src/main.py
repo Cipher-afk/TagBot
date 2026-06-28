@@ -8,8 +8,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 import httpx
 from config import settings
 from backend.models import Plan
+from functools import lru_cache
 
 service = PaymentService()
+
+
+@lru_cache(maxsize=287)
+async def cached_check_expired(phone_number: str, session: AsyncSession):
+    expired = await service.payment_expired(phone_number=phone_number, session=session)
+    return expired
 
 
 @asynccontextmanager
@@ -88,6 +95,7 @@ async def verify_payment(
     ):
         raise HTTPException(status_code=403, detail="Bad Signature")
     await service.verfify_payment(body=body, session=session)
+    cached_check_expired.cache_clear()
 
 
 @app.get("/me")
@@ -111,6 +119,12 @@ async def update_info(
         raise HTTPException(status_code=404, detail="User Not Found")
     await service.update_user_info(user=user, info=update_model.info, session=session)
     return {"Updated": True}
+
+
+@app.get("/check_expired")
+async def check_expired(phone_number: str, session: AsyncSession):
+    expired = await cached_check_expired(phone_number, session)
+    return expired
 
 
 # @app.post("/update_password")

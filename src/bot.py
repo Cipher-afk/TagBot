@@ -93,8 +93,29 @@ async def get_payment_link(message: Message):
         return data["payment_link"]
 
 
+async def check_expired(message: Message):
+    data = await get_userinfo(telegram_id=message.chat.id)
+    plan = await get_plan(telegram_id=message.chat.id)
+    if data is not None:
+        phone_number = data["phone_number"]
+    else:
+        user = await get_user(message=message)
+        phone_number = user["phone_number"]
+    params = {"phone_number": phone_number}
+    timeout = httpx.Timeout(connect=6.0, read=12.0, write=6.0, pool=5.0)
+    async with httpx.AsyncClient(verify=False, timeout=timeout) as client:
+        response = await client.get(
+            f"{settings.DOMAIN_URL}/check_expired", params=params
+        )
+        data = response.json()
+        return True if data["expired"] else False
+
+
 async def do_tasks(message: Message):
     telegram_id = message.chat.id
+    expired = await check_expired(message=message)
+    if expired:
+        return
     data = await get_userinfo(telegram_id=telegram_id)
     if data is not None:
         phone_number = data["phone_number"]
@@ -134,7 +155,10 @@ async def do_tasks(message: Message):
 
 @router.message(Command("start"))
 async def start(message: Message):
-    await message.answer("Welcome to Tag Scraper", reply_markup=login_button)
+    await message.answer(
+        "Welcome to Tag Bot\nTo get started, just follow these simple steps\n",
+        reply_markup=login_button,
+    )
 
 
 @router.callback_query(F.data == "try_again")
@@ -328,12 +352,15 @@ async def get_paid_plan(message: Message):
     payment_buttons = await get_payment_buttons()
     user = await get_user(message=message)
     if user is not None:
-        if user["plan"] == Plan.free:
+        plan = user["plan"]
+        if plan == Plan.free:
             await message.answer(
                 "You don't have any paid plans yet you can proceed with payment by clicking on one of these buttons",
                 reply_markup=payment_buttons,
             )
-        await message.answer(f"Your current plan is {user['plan']}")
+        await message.answer(
+            f"Your current plan is {plan} {'🆓' if plan == Plan.free else '⚡' if plan == Plan.basic else '💎' }"
+        )
 
 
 async def main():

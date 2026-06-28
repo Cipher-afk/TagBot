@@ -114,7 +114,9 @@ class BotScraper:
 
         print(task_text)
         print(task_text.split(" "))
+        print(plan, flush=True)
         if plan == Plan.free:
+            print("Using free", flush=True)
             task_value = 3
         else:
             task_to_be_done = int(
@@ -177,7 +179,7 @@ class BotScraper:
             )
             print("clicked", flush=True)
             await page.wait_for_selector(".info", state="visible", timeout=10000)
-            await message.answer("Filling in the rati   ng.... 🔃")
+            await message.answer("Filling in the rating.... 🔃")
             await page.get_by_text("Submit Rating", exact=True).click()
             await message.answer("Submitted rating")
             await page.wait_for_timeout(3000)
