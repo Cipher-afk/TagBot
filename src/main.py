@@ -126,7 +126,9 @@ async def update_info(
 
 
 @app.get("/check_expired")
-async def check_expired(phone_number: str, session: AsyncSession):
+async def check_expired(
+    phone_number: str, session: AsyncSession = Depends(get_session)
+):
     expired = await cached_check_expired(phone_number, session)
     return expired
 
