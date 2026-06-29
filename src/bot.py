@@ -156,8 +156,26 @@ async def do_tasks(message: Message):
 @router.message(Command("start"))
 async def start(message: Message):
     await message.answer(
-        "Welcome to Tag Bot\nTo get started, just follow these simple steps\n",
+        """👋 *Hey! Welcome to TagBot.*
+
+To get started, just follow these simple steps:
+
+1️⃣ *Login* — Connect your TAG account using the button below.
+
+2️⃣ *Choose a Plan* — Pick what works for you:
+🆓 Free, 🔹 Basic, or 💎 Premium
+
+3️⃣ *Do Your Tasks* — Hit *Do Tasks* and let TagBot handle the rest!
+
+🔧 *Commands you can use anytime:*
+
+/do\_task — Run your tasks now
+/view\_plans — See available plans
+/view\_paid\_plans — Check your active plan
+
+Simple. Tap *Login* below to begin 👇""",
         reply_markup=login_button,
+        parse_mode="Markdown",
     )
 
 

@@ -121,11 +121,11 @@ async def update_info(
         phone_number=update_model.phone_number, session=session
     )
     info = update_model.info
-    if user is None:
-        info["plan"] = Plan.free
-    else:
-        info["plan"] = user.plan
-        info["end_of_plan"] = user.end_of_plan
+    # if user is None:
+    #     info["plan"] = Plan.free
+    # else:
+    #     info["plan"] = user.plan
+    #     info["end_of_plan"] = user.end_of_plan
     await service.update_user_info(user=main_user, info=info, session=session)
     return {"Updated": True}
 
