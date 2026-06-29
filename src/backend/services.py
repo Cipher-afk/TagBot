@@ -8,6 +8,7 @@ from fastapi import HTTPException
 from datetime import datetime, timedelta
 from bot import bot
 from buttons import try_again_button, renew_button, do_tasks_button
+from redis_config import save_plan
 
 PAYMENT_SECRET_KEY = settings.PAYSTACK_SECRET_KEY
 admin_numbers = ["7025614656", "7062773398"]
@@ -66,6 +67,7 @@ class PaymentService:
                 raise HTTPException(status_code=403, detail="User Not Found")
             info = {"is_paid": True, "plan": plan, "end_of_plan": end_of_plan}
             await self.update_user_info(user=user, info=info, session=session)
+            await save_plan(telegram_id=telegram_id, plan=plan)
             await bot.send_message(
                 chat_id=telegram_id,
                 text="Payment Verified",

@@ -117,15 +117,16 @@ async def do_tasks(message: Message):
     if expired:
         return
     data = await get_userinfo(telegram_id=telegram_id)
-    if data is not None:
+    plan = await get_plan(telegram_id=telegram_id)
+    if data is not None and plan is not None:
         phone_number = data["phone_number"]
         password = data["password"]
-        plan = await get_plan(telegram_id=telegram_id)
     else:
         user = await get_user(message=message)
         phone_number = user["phone_number"]
         password = user["password"]
         plan = user["plan"]
+        print(f"User plan from db is {plan}")
         await save_userinfo(
             telegram_id=telegram_id, phone_number=phone_number, password=password
         )
