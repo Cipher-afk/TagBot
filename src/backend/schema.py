@@ -8,5 +8,5 @@ class UserModel(BaseModel):
 
 
 class UpdateModel(BaseModel):
-    telegram_id: str
+    phone_number: str
     info: dict[str, str]

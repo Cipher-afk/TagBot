@@ -112,12 +112,16 @@ async def get_user(telegram_id: str, session: AsyncSession = Depends(get_session
 async def update_info(
     update_model: UpdateModel, session: AsyncSession = Depends(get_session)
 ):
-    user = await service.get_user_by_telegram_id(
-        telegram_id=update_model.telegram_id, session=session
+    user = await service.get_user_by_phone_num(
+        phone_number=update_model.phone_number, session=session
     )
+    info = update_model.info
     if user is None:
-        raise HTTPException(status_code=404, detail="User Not Found")
-    await service.update_user_info(user=user, info=update_model.info, session=session)
+        info["plan"] = Plan.free
+    else:
+        info["plan"] = user.plan
+        info["end_of_plan"] = user.end_of_plan
+    await service.update_user_info(user=user, info=info, session=session)
     return {"Updated": True}
 
 

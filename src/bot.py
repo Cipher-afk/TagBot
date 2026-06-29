@@ -294,7 +294,7 @@ async def handle_password(message: Message, state: FSMContext):
         user = await get_user(message=message)
         if user is not None:
             updated = await update_user_info(
-                message=message, telegram_id=telegram_id, info=info
+                message=message, phone_number=phone_number, info=info
             )
             if updated:
                 await save_userinfo(
@@ -329,6 +329,11 @@ async def handle_password(message: Message, state: FSMContext):
         )
     except TelegramNetworkError:
         await message.answer("Check Your Network and try again".title())
+
+
+@router.message(Command("login"))
+async def get_login_button(message: Message):
+    await message.answer("👋 Welcome to Tag Scraper", reply_markup=login_button)
 
 
 @router.message(Command("do_tasks"))

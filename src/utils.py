@@ -9,9 +9,9 @@ tag_scraper = BotScraper()
 scraper_queue = asyncio.Queue()
 
 
-async def update_user_info(message: Message, telegram_id: str, info: dict):
+async def update_user_info(message: Message, phone_number: str, info: dict):
     timeout = httpx.Timeout(connect=6.0, read=12.0, write=6.0, pool=5.0)
-    data = {"telegram_id": telegram_id, "info": info}
+    data = {"phone_number": phone_number, "info": info}
     async with httpx.AsyncClient(verify=False, timeout=timeout) as client:
         response = await client.post(
             f"{settings.DOMAIN_URL}/update_info",
