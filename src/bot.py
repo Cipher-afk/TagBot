@@ -11,7 +11,13 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from config import settings
-from redis_config import save_userinfo, get_userinfo, get_plan, save_plan
+from redis_config import (
+    save_userinfo,
+    get_userinfo,
+    get_plan,
+    save_plan,
+    check_if_tasks_done,
+)
 import asyncio
 from aiogram.exceptions import TelegramNetworkError
 from bot_scraper import BotScraper
@@ -114,7 +120,13 @@ async def check_expired(message: Message):
 async def do_tasks(message: Message):
     telegram_id = message.chat.id
     expired = await check_expired(message=message)
+    task_done = await check_if_tasks_done(telegram_id=telegram_id)
     if expired:
+        return
+    if task_done:
+        await message.answer(
+            "All your task for today have been completed 🥂\nSee You Tommorrow 😏"
+        )
         return
     data = await get_userinfo(telegram_id=telegram_id)
     plan = await get_plan(telegram_id=telegram_id)
@@ -170,6 +182,7 @@ To get started, just follow these simple steps:
 
 🔧 *Commands you can use anytime:*
 
+/login — Connect your TAG account
 /do\_task — Run your tasks now
 /view\_plans — See available plans
 /view\_paid\_plans — Check your active plan

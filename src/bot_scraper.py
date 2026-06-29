@@ -7,6 +7,7 @@ from pathlib import Path
 from backend.models import Plan
 import re
 from datetime import datetime
+from redis_config import set_task_done
 
 ocr = ddddocr.DdddOcr()
 BASE_DIR = Path(__file__).parent.resolve()
@@ -194,12 +195,13 @@ class BotScraper:
             photo=FSInputFile(path=file_path),
             caption=f"All tasks completed! Total tasks done: {tasks_done}",
         )
+        await set_task_done(telegram_id=str(message.chat.id))
         os.remove(file_path)
 
     async def main(
         self, plan: str, phone_number: str, password: str, message: Message, bot: Bot
     ):
-        today = datetime.now().strftime("%d")
+        today = datetime.now().strftime("%A")
         if today.lower() == "sunday":
             await message.answer(
                 "There are no tasks to be done on a sunday enjoy your weekend 🥳".title()

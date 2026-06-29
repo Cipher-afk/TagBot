@@ -28,3 +28,12 @@ async def save_plan(telegram_id: str, plan: str):
 async def get_plan(telegram_id: str):
     current_plan = await redis.get(f"{telegram_id}_plan")
     return current_plan
+
+
+async def set_task_done(telegram_id: str):
+    await redis.set(f"{telegram_id}_task_done", True, ex=86400)
+
+
+async def check_if_tasks_done(telegram_id: str):
+    task_done = await redis.get(f"{telegram_id}_task_done")
+    return True if task_done == "True" else False
