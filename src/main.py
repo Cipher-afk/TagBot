@@ -86,7 +86,7 @@ async def initialize_payment(
     )
     print(end_of_plan_date, flush=True)
     not_subscribed_message = (
-        f"Click on the link below to make your payment 👇 \n {payment_link['link']}"
+        f"Click on the link below to make your payment 👇 \n {payment_link}"
     )
     already_subscribed_message = f"""
     ⚠ You already have an active {user.plan} plan.
