@@ -91,12 +91,15 @@ class PaymentService:
         )
         if user is None:
             raise HTTPException(status_code=404, detail="User is not found")
-        end_of_plan = user.end_of_plan
-        telegram_id = user.telegram_id
-        current_date = datetime.now().timestamp()
-        if current_date >= end_of_plan:
-            await bot.send_message(
-                telegram_id, "Your Monthly plan has expired", reply_markup=renew_button
-            )
-            return {"expired": True}
-        return {"expired": False}
+        if user.is_paid:
+            end_of_plan = user.end_of_plan
+            telegram_id = user.telegram_id
+            current_date = datetime.now().timestamp()
+            if current_date >= end_of_plan:
+                await bot.send_message(
+                    telegram_id,
+                    "Your Monthly plan has expired",
+                    reply_markup=renew_button,
+                )
+                return {"expired": True}
+            return {"expired": False}
