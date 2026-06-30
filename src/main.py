@@ -81,8 +81,10 @@ async def initialize_payment(
             raise HTTPException(status_code=403, detail=data["message"])
         payment_link = data["data"]["authorization_url"]
     not_subscribed_data = {"payment_link": {"status": True, "link": payment_link}}
-    end_of_plan_date = datetime.fromtimestamp(user.end_of_plan).strftime(
-        "%d/%m/%Y, %I:%M %p"
+    end_of_plan_date = (
+        datetime.fromtimestamp(user.end_of_plan).strftime("%d/%m/%Y, %I:%M %p")
+        if user.is_paid
+        else None
     )
     print(end_of_plan_date, flush=True)
     not_subscribed_message = (
