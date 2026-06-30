@@ -74,7 +74,7 @@ async def get_user(message: Message):
         if response.is_error:
             print(response.json())
             await message.answer(
-                "You don't have an account with us yet if you are logging in ignore this message\n if not please create an account before doing a task thank you ☺".title()
+                "You don't have an account with us yet if you are logging in ignore this message\n if not please create an account before doing a task thank you ☺"
             )
             return
         user = response.json()
@@ -183,7 +183,7 @@ To get started, just follow these simple steps:
 🔧 *Commands you can use anytime:*
 
 /login — Connect your TAG account
-/do\_task — Run your tasks now
+/do\_tasks — Run your tasks now
 /view\_plans — See available plans
 /view\_paid\_plan — Check your active plan
 
