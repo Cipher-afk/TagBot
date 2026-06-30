@@ -249,8 +249,9 @@ async def handle_pay(callback: CallbackQuery):
     payment_link = await get_payment_link(message=callback.message)
     if payment_link["status"] == False:
         await callback.message.edit_text(payment_link["message"])
+        return
     await callback.message.edit_text(
-        f"Click on the link below to make your payment 👇 \n {payment_link['link']}",
+        payment_link["message"],
         reply_markup=back_to_plans_button,
     )
 

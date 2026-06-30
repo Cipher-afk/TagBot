@@ -54,38 +54,40 @@ async def initialize_payment(
     if user is None:
         raise HTTPException(status_code=404, detail="User Not Found")
     amount = 1000 if plan == Plan.basic else 1500
-    if not user.is_paid:
-        headers = {
-            "Authorization": f"Bearer {settings.PAYSTACK_SECRET_KEY}",
-            "Content-Type": "application/json",
-        }
+    headers = {
+        "Authorization": f"Bearer {settings.PAYSTACK_SECRET_KEY}",
+        "Content-Type": "application/json",
+    }
 
-        data = {
-            "email": settings.EMAIL,
-            "amount": amount * 100,
-            "metadata": {
-                "telegram_id": user.telegram_id,
-                "phone_number": user.phone_number,
-                "amount": amount,
-            },
-        }
-        async with httpx.AsyncClient(verify=False) as client:
-            response = await client.post(
-                url="https://api.paystack.co/transaction/initialize",
-                headers=headers,
-                json=data,
-                timeout=100,
-            )
-            data = response.json()
-            print(data, flush=True)
-            if not data["status"]:
-                raise HTTPException(status_code=403, detail=data["message"])
-            payment_link = data["data"]["authorization_url"]
-        return {"payment_link": {"status": True, "link": payment_link}}
+    data = {
+        "email": settings.EMAIL,
+        "amount": amount * 100,
+        "metadata": {
+            "telegram_id": user.telegram_id,
+            "phone_number": user.phone_number,
+            "amount": amount,
+        },
+    }
+    async with httpx.AsyncClient(verify=False) as client:
+        response = await client.post(
+            url="https://api.paystack.co/transaction/initialize",
+            headers=headers,
+            json=data,
+            timeout=100,
+        )
+        data = response.json()
+        print(data, flush=True)
+        if not data["status"]:
+            raise HTTPException(status_code=403, detail=data["message"])
+        payment_link = data["data"]["authorization_url"]
+    not_subscribed_data = {"payment_link": {"status": True, "link": payment_link}}
     end_of_plan_date = datetime.fromtimestamp(user.end_of_plan).strftime(
         "%d/%m/%Y, %I:%M %p"
     )
     print(end_of_plan_date, flush=True)
+    not_subscribed_message = (
+        f"Click on the link below to make your payment 👇 \n {payment_link['link']}"
+    )
     already_subscribed_message = f"""
     ⚠ You already have an active {user.plan} plan.
 
@@ -94,8 +96,16 @@ async def initialize_payment(
     You can still proceed, but note: paying for a new plan will replace your current plan
 
     ignore the link below if you dont't want to procced with the payment
+
+    {payment_link}
     """.title()
-    return {"payment_link": {"status": False, "message": already_subscribed_message}}
+    not_subscribed_data = {
+        "payment_link": {"status": True, "message": not_subscribed_message}
+    }
+    already_subscribed_data = {
+        "payment_link": {"status": False, "message": already_subscribed_message}
+    }
+    return not_subscribed_data if not user.is_paid else already_subscribed_data
 
 
 @app.post("/webhook")
