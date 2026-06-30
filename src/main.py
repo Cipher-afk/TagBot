@@ -9,6 +9,7 @@ import httpx
 from config import settings
 from backend.models import Plan
 from functools import lru_cache
+from datetime import datetime
 
 service = PaymentService()
 
@@ -76,11 +77,25 @@ async def initialize_payment(
                 timeout=100,
             )
             data = response.json()
+            print(data, flush=True)
             if not data["status"]:
                 raise HTTPException(status_code=403, detail=data["message"])
             payment_link = data["data"]["authorization_url"]
-        return {"payment_link": payment_link}
-    # return {'payment_link':None}
+        return {"payment_link": {"status": True, "link": payment_link}}
+    end_of_plan_date = datetime.fromtimestamp(user.end_of_plan).strftime(
+        "%d/%m/%Y, %I:%M %p"
+    )
+    print(end_of_plan_date, flush=True)
+    already_subscribed_message = f"""
+    ⚠ You already have an active {user.plan} plan.
+
+    It's valid till {end_of_plan_date}.
+
+    You can still proceed, but note: paying for a new plan will replace your current plan
+
+    ignore the link below if you dont't want to procced with the payment
+    """.title()
+    return {"payment_link": {"status": False, "message": already_subscribed_message}}
 
 
 @app.post("/webhook")

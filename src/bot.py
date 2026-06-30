@@ -185,7 +185,7 @@ To get started, just follow these simple steps:
 /login — Connect your TAG account
 /do\_task — Run your tasks now
 /view\_plans — See available plans
-/view\_paid\_plans — Check your active plan
+/view\_paid\_plan — Check your active plan
 
 Simple. Tap *Login* below to begin 👇""",
         reply_markup=login_button,
@@ -247,8 +247,10 @@ async def handle_pay(callback: CallbackQuery):
     await callback.answer()
     await callback.message.edit_text("Payment link loading....")
     payment_link = await get_payment_link(message=callback.message)
+    if payment_link["status"] == False:
+        await callback.message.edit_text(payment_link["message"])
     await callback.message.edit_text(
-        f"Click on the link below to make your payment 👇 \n {payment_link}",
+        f"Click on the link below to make your payment 👇 \n {payment_link['link']}",
         reply_markup=back_to_plans_button,
     )
 
