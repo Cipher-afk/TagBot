@@ -98,7 +98,7 @@ async def initialize_payment(
     ignore the link below if you dont't want to procced with the payment
 
     {payment_link}
-    """.title()
+    """
     not_subscribed_data = {
         "payment_link": {"status": True, "message": not_subscribed_message}
     }
