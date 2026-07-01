@@ -10,6 +10,7 @@ from config import settings
 from backend.models import Plan
 from functools import lru_cache
 from datetime import datetime
+from scheduler import scheduler
 
 service = PaymentService()
 
@@ -24,7 +25,9 @@ async def cached_check_expired(phone_number: str, session: AsyncSession):
 async def lifespan(app: FastAPI):
     print("Server Starting...")
     await init_db()
+    scheduler.start()
     yield
+    scheduler.shutdown()
     print("Server ending...")
 
 
